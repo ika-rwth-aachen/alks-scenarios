@@ -8,15 +8,15 @@ Recreate test scenarios from [UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4
 
 *Cut in* test scenario:
 
-<img src="https://raw.githubusercontent.com/ika-rwth-aachen/simple-scenario/refs/heads/main/assets/cutin_plot_09_ve0_40_dv0_10_dx0_3.0_vy_0.3.gif">
+<img src="https://raw.githubusercontent.com/ika-rwth-aachen/alks-scenarios/refs/heads/main/assets/cutin_plot_09_ve0_40_dv0_10_dx0_3.0_vy_0.3.gif">
 
 *Cut out* test scenario:
 
-<img src="https://raw.githubusercontent.com/ika-rwth-aachen/simple-scenario/refs/heads/main/assets/cutout_plot_04_ve0_30_dx0f_64.0_vy_0.5.gif">
+<img src="https://raw.githubusercontent.com/ika-rwth-aachen/alks-scenarios/refs/heads/main/assets/cutout_plot_04_ve0_30_dx0f_64.0_vy_0.5.gif">
 
 *Deceleration* test scenario:
 
-<img src="https://raw.githubusercontent.com/ika-rwth-aachen/simple-scenario/refs/heads/main/assets/deceleration_plot_ve0_48_gx_0.50.gif">
+<img src="https://raw.githubusercontent.com/ika-rwth-aachen/alks-scenarios/refs/heads/main/assets/deceleration_plot_ve0_48_gx_0.50.gif">
 
 # Notice
 
