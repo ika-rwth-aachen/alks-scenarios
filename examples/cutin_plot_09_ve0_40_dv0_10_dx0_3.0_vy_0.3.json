@@ -1,0 +1,44 @@
+{
+  "scenario_id": "cutin_plot_09_ve0_40_dv0_10_dx0_3.0_vy_0.3",
+  "road": {
+    "n_lanes": 2,
+    "lane_width": 3.5,
+    "segments": [
+      {
+        "length": 300,
+        "heading": 0.0
+      }
+    ],
+    "speed_limit": 60,
+    "goal_position": 233.33333333333331,
+    "x0": 0,
+    "y0": 0
+  },
+  "ego_configuration": {
+    "lanelet_id": 1001,
+    "s0": 100,
+    "t0": 0,
+    "v0": 11.11111111111111,
+    "vehicle_type_name": "medium"
+  },
+  "vehicles": [
+    {
+      "vehicle_id": 0,
+      "lanelet_id": 1000,
+      "s0": 107.50800000000001,
+      "t0": 0.2899999999999996,
+      "v0": 8.333333333333334,
+      "a0": 0,
+      "a_delay": 0,
+      "a_profile": "constant",
+      "lc_direction": 1,
+      "lc_delay": 0,
+      "lc_duration": 3,
+      "lc_type": "vy",
+      "lc_vy": 0.30000000000000004,
+      "vehicle_type_name": "medium"
+    }
+  ],
+  "duration": 16.0,
+  "dt": 0.1
+}

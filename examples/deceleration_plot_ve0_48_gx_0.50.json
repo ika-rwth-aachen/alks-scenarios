@@ -1,0 +1,44 @@
+{
+  "scenario_id": "deceleration_plot_ve0_48_gx_0.50",
+  "road": {
+    "n_lanes": 2,
+    "lane_width": 3.5,
+    "segments": [
+      {
+        "length": 300,
+        "heading": 0.0
+      }
+    ],
+    "speed_limit": 60,
+    "goal_position": 230.0,
+    "x0": 0,
+    "y0": 0
+  },
+  "ego_configuration": {
+    "lanelet_id": 1001,
+    "s0": 100,
+    "t0": 0,
+    "v0": 13.333333333333332,
+    "vehicle_type_name": "medium"
+  },
+  "vehicles": [
+    {
+      "vehicle_id": 0,
+      "lanelet_id": 1001,
+      "s0": 131.17466666666664,
+      "t0": 0,
+      "v0": 13.333333333333332,
+      "a0": -4.905,
+      "a_delay": 0,
+      "a_profile": "constant",
+      "lc_direction": 0,
+      "lc_delay": 0,
+      "lc_duration": 3,
+      "lc_type": "polynomial",
+      "lc_vy": 0,
+      "vehicle_type_name": "medium"
+    }
+  ],
+  "duration": 4.0,
+  "dt": 0.1
+}
