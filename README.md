@@ -6,11 +6,11 @@ Recreate test scenarios from [UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4
 
 :bulb: *To recreate these gifs use: [examples/generate_gifs.py](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/demo/examples/generate_gifs.py).*
 
-*Cut in* test scenario:
+*Cut-in* test scenario:
 
 <img src="https://raw.githubusercontent.com/ika-rwth-aachen/alks-scenarios/refs/heads/main/assets/cutin_plot_09_ve0_40_dv0_10_dx0_3.0_vy_0.3.gif">
 
-*Cut out* test scenario:
+*Cut-out* test scenario:
 
 <img src="https://raw.githubusercontent.com/ika-rwth-aachen/alks-scenarios/refs/heads/main/assets/cutout_plot_04_ve0_30_dx0f_64.0_vy_0.5.gif">
 
@@ -90,8 +90,8 @@ $ pytest
 
 Use the following commands to generate test scenarios of different logical scenarios:
 
-- [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/cutin_scenario_generator.py): Generate *Cut in* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, pp. 45-52
-- [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/cutout_scenario_generator.py): Generate *Cut out* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, pp. 53-55 
+- [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/cutin_scenario_generator.py): Generate *Cut-in* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, pp. 45-52
+- [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/cutout_scenario_generator.py): Generate *Cut-out* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, pp. 53-55 
 - [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/deceleration_scenario_generator.py): Generate *Deceleration* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, p. 56
 
 Per default, test scenarios are generated in `results/annex3`.
