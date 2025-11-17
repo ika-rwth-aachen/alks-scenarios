@@ -1,5 +1,7 @@
 # alks-scenarios
 
+<img src="https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks-scenarios.svg?raw=True" width="400px" style="margin: 10px;">
+
 Recreate test scenarios from [UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4](https://unece.org/transport/documents/2023/03/standards/un-regulation-no-157-amend4) Annex 3 pp. 45-56 using [simple-scenario](https://github.com/ika-rwth-aachen/simple-scenario).
 
 # Examples
