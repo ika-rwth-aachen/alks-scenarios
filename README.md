@@ -93,8 +93,8 @@ $ pytest
 Use the following commands to generate test scenarios of different logical scenarios:
 
 - [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/cutin_scenario_generator.py): Generate *Cut-in* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, pp. 45-52
-- [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/cutout_scenario_generator.py): Generate *Cut-out* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, pp. 53-55 
-- [`alks_scenarios/cutin_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/deceleration_scenario_generator.py): Generate *Deceleration* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, p. 56
+- [`alks_scenarios/cutout_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/cutout_scenario_generator.py): Generate *Cut-out* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, pp. 53-55 
+- [`alks_scenarios/deceleration_scenario_generator.py`](https://github.com/ika-rwth-aachen/alks-scenarios/blob/main/alks_scenarios/deceleration_scenario_generator.py): Generate *Deceleration* test scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3, p. 56
 
 Per default, test scenarios are generated in `results/annex3`.
 Per test scenario, the following files are generated:

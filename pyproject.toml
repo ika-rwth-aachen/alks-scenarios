@@ -18,7 +18,7 @@ version = "0.1.0"
 dependencies = [
     "loguru>=0.7.3",
     "numpy>=1.24.4",
-    "simple-scenario[commonroad]>=0.10.1",
+    "simple-scenario[commonroad]",
     "tqdm>=4.67.1",
 ]
 classifiers = [
@@ -42,6 +42,9 @@ build = [
     "twine>=6.1.0",
 ]
 
+
+[tool.uv.sources]
+simple-scenario = { path = "/work/tarlowski/simple/github/simple-scenario", editable = true }
 
 [tool.setuptools]
 packages = [
