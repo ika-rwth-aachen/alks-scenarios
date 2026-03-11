@@ -43,7 +43,7 @@ dev = [
 requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "numpy", specifier = ">=1.24.4" },
-    { name = "simple-scenario", extras = ["commonroad"], editable = "../simple-scenario" },
+    { name = "simple-scenario", extras = ["commonroad"], specifier = ">=1.0.0" },
     { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
@@ -3795,7 +3795,7 @@ wheels = [
 [[package]]
 name = "simple-scenario"
 version = "1.0.0"
-source = { editable = "../simple-scenario" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "commonroad-vehicle-models" },
     { name = "lanelet2" },
@@ -3820,49 +3820,16 @@ dependencies = [
     { name = "tqdm" },
     { name = "typer" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/f6/25/e8452e6b9acbcff81be13821ff90362e2d2f9897bd543c62e239f20aa16c/simple_scenario-1.0.0.tar.gz", hash = "sha256:d1731335520e76656c280e807772742435b4099996a4ff2f999ce53432cef524", size = 61246, upload-time = "2026-03-06T10:15:30.941Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/65/8b/46f2133f43cf1858d45d01f1a4734ecdd484bb0434974681a2c481846ba7/simple_scenario-1.0.0-py3-none-any.whl", hash = "sha256:0b9516bf391fafbe1366e1a35ffd525a2ca3d5aa0fbb41842d97def3fd6e29b8", size = 62278, upload-time = "2026-03-06T10:15:29.643Z" },
+]
 
 [package.optional-dependencies]
 commonroad = [
     { name = "commonroad-drivability-checker" },
     { name = "commonroad-io" },
     { name = "shapely" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "commonroad-drivability-checker", marker = "extra == 'commonroad'", specifier = "==2022.1" },
-    { name = "commonroad-io", marker = "extra == 'commonroad'", specifier = "==2022.1" },
-    { name = "commonroad-vehicle-models", specifier = "==3.0.2" },
-    { name = "lanelet2", specifier = ">=1.2.2" },
-    { name = "loguru", specifier = ">=0.7.3" },
-    { name = "lxd-io", marker = "extra == 'lxd'", specifier = ">=0.4.5" },
-    { name = "lxml", specifier = ">=5.3.1" },
-    { name = "matplotlib", specifier = ">=3.7.5" },
-    { name = "numpy", specifier = ">=1.24.4" },
-    { name = "pillow", specifier = ">=10.4.0" },
-    { name = "pyclothoids", specifier = ">=0.1.5" },
-    { name = "pyproj", specifier = ">=3.5.0" },
-    { name = "scenariogeneration", specifier = ">=0.14.9" },
-    { name = "shapely", marker = "extra == 'commonroad'", specifier = "==1.8.5.post1" },
-    { name = "tqdm", specifier = ">=4.67.1" },
-    { name = "typer", specifier = ">=0.15.2" },
-]
-provides-extras = ["commonroad", "lxd"]
-
-[package.metadata.requires-dev]
-build = [
-    { name = "build", specifier = ">=1.2.2.post1" },
-    { name = "twine", specifier = ">=6.1.0" },
-]
-dev = [
-    { name = "coverage", specifier = ">=7.6.1" },
-    { name = "ipykernel", specifier = ">=6.29.5" },
-    { name = "nbval", specifier = ">=0.11.0" },
-    { name = "pre-commit", specifier = ">=3.5.0" },
-    { name = "pycobertura", specifier = ">=3.3.2" },
-    { name = "pytest", specifier = ">=8.3.5" },
-    { name = "pytest-cov", specifier = ">=5.0.0" },
-    { name = "ruff", specifier = ">=0.10.0" },
 ]
 
 [[package]]

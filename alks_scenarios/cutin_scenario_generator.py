@@ -35,8 +35,8 @@ class CutInScenarioGenerator:
         dx0_min = 0
         dx0_max = 60
         # Varying values
-        vy_step = 2.0
-        dx0_step = 10
+        vy_step = 3.0
+        dx0_step = 20
         self._vy_values = np.arange(vy_min + vy_step, vy_max + vy_step, vy_step)
         self._dx0_values = np.arange(dx0_min, dx0_max + dx0_step, dx0_step)
 
@@ -81,19 +81,7 @@ class CutInScenarioGenerator:
         plot_no_result_dir = self._result_dir / f"plot_{plot_no:02d}"
         plot_no_result_dir.mkdir(exist_ok=True)
 
-        # Scenarios
-        scenario_result_dir = plot_no_result_dir / "scenarios"
-        scenario_result_dir.mkdir(exist_ok=True)
-
-        # Images
-        scenario_image_dir = plot_no_result_dir / "images"
-        if create_image:
-            scenario_image_dir.mkdir(exist_ok=True)
-
-        # Gifs
-        scenario_gif_dir = plot_no_result_dir / "gifs"
-        if create_gif:
-            scenario_gif_dir.mkdir(exist_ok=True)
+        # Each scenario will get its own subfolder under the plot directory
 
         vo0_kmh = ve0_kmh - dv0_kmh
         ve0 = ve0_kmh / 3.6
@@ -110,9 +98,7 @@ class CutInScenarioGenerator:
                         vy,
                         ve0,
                         vo0,
-                        scenario_result_dir,
-                        scenario_gif_dir,
-                        scenario_image_dir,
+                        plot_no_result_dir,
                         create_gif=create_gif,
                         create_image=create_image,
                         create_openx=create_openx,
@@ -126,9 +112,7 @@ class CutInScenarioGenerator:
         vy: float,
         ve0: float,
         vo0: float,
-        scenario_result_dir: Path,
-        scenario_gif_dir: Path,
-        scenario_image_dir: Path,
+        plot_no_result_dir: Path,
         create_gif: bool = False,
         create_image: bool = False,
         create_openx: bool = False,
@@ -197,36 +181,46 @@ class CutInScenarioGenerator:
             check_feasibility=False,
         )
 
-        scenario_config_dir = scenario_result_dir / "configs"
+        scenario_dir = plot_no_result_dir / scenario_name
+        scenario_dir.mkdir(exist_ok=True)
+
+        scenario_config_dir = scenario_dir / "configs"
         scenario_config_dir.mkdir(exist_ok=True)
         scenario.save(scenario_config_dir)
 
         if create_openx:
-            scenario_result_dir_openx = scenario_result_dir / "openx"
-            scenario_result_dir_openx.mkdir(exist_ok=True)
-            scenario.save(scenario_result_dir_openx, mode="openx")
+            scenario_openx_dir = scenario_dir / "openx"
+            scenario_openx_dir.mkdir(exist_ok=True)
+            scenario.save(scenario_openx_dir, mode="openx")
+        if create_image or create_gif:
+            scenario_image_dir = scenario_dir / "images"
+            scenario_image_dir.mkdir(exist_ok=True)
         if create_image:
             scenario.render(scenario_image_dir, dpi=600)
         if create_gif:
-            scenario.render_gif(scenario_gif_dir, dpi=600)
+            scenario.render_gif(scenario_image_dir, dpi=600)
 
 
 def unpack_and_run(args_list: list) -> None:
     scenario_generator = CutInScenarioGenerator(args_list[0])
     scenario_generator.create_all_scenarios(
-        only_plot_no=args_list[1], create_image=True, create_openx=True
+        only_plot_no=args_list[1], create_image=args_list[2], create_openx=args_list[3], create_gif=args_list[4]
     )
 
 
 def generate_all_scenarios() -> None:
     result_dir = Path(__file__).parent / ".." / "results" / "annex3" / "cutin"
     result_dir.mkdir(exist_ok=True, parents=True)
+    
+    create_image = True
+    create_openx = True
+    create_gif = False
 
-    n_plots_in_regulation = 1
+    n_plots_in_regulation = 14  # Number of plots defined in the regulation
 
     n_workers = n_plots_in_regulation
 
-    all_args_lists = [[result_dir, i + 1] for i in range(n_plots_in_regulation)]
+    all_args_lists = [[result_dir, i + 1, create_image, create_openx, create_gif] for i in range(n_plots_in_regulation)]
 
     if n_workers == 1:
         for arg_list in all_args_lists:

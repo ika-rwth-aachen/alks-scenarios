@@ -5,7 +5,7 @@ from alks_scenarios import CutOutScenarioGenerator
 
 class TestScenarioGeneration:
     RESULT_DIR = Path(__file__).parent / "test_results" / "test_scenario_generation"
-    RESULT_DIR.mkdir(exist_ok=True)
+    RESULT_DIR.mkdir(exist_ok=True, parents=True)
 
     def test_cutout_scenario_generator(self):
         cutout_generator = CutOutScenarioGenerator()

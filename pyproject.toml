@@ -5,20 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "alks-scenarios"
 authors = [
-    {name = "Lennart Vater", email = "lennart.vater@ika.rwth-aachen.de"}
+    {name = "Lennart Vater", email = "lennart.vater@rwth-aachen.de"},
+    {name = "Sven Tarlowski", email = "sven.tarlowski@ika.rwth-aachen.de"},
+    {name = "ika - RWTH Aachen University", email = "opensource@ika.rwth-aachen.de"}
 ]
 maintainers = [
-    {name = "Lennart Vater", email = "lennart.vater@ika.rwth-aachen.de"}
+    {name = "Sven Tarlowski", email = "sven.tarlowski@ika.rwth-aachen.de"}
 ]
 description = "Recreate test scenarios from UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4 Annex 3 pp. 45-56 using simple-scenario."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
     "loguru>=0.7.3",
     "numpy>=1.24.4",
-    "simple-scenario[commonroad]",
+    "simple-scenario[commonroad]>=1.0.1",
     "tqdm>=4.67.1",
 ]
 classifiers = [
@@ -43,8 +45,6 @@ build = [
 ]
 
 
-[tool.uv.sources]
-simple-scenario = { path = "/work/tarlowski/simple/github/simple-scenario", editable = true }
 
 [tool.setuptools]
 packages = [
