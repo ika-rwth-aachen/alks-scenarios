@@ -8,7 +8,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from simple_scenario import Scenario, EgoConfiguration, Vehicle
-from simple_scenario.road import Road, StraightSegment
+from simple_scenario.road import SyntheticRoad, StraightSegment
 
 
 class CutOutScenarioGenerator:
@@ -134,19 +134,7 @@ class CutOutScenarioGenerator:
         plot_no_result_dir = self._result_dir / f"plot_{plot_no:02d}"
         plot_no_result_dir.mkdir(exist_ok=True)
 
-        # Scenarios
-        scenario_result_dir = plot_no_result_dir / "scenarios"
-        scenario_result_dir.mkdir(exist_ok=True)
-
-        # Images
-        scenario_image_dir = plot_no_result_dir / "images"
-        if create_image:
-            scenario_image_dir.mkdir(exist_ok=True)
-
-        # Gifs
-        scenario_gif_dir = plot_no_result_dir / "gifs"
-        if create_gif:
-            scenario_gif_dir.mkdir(exist_ok=True)
+        # Each scenario will get its own subfolder under the plot directory
 
         ve0 = ve0_kmh / 3.6
 
@@ -160,9 +148,7 @@ class CutOutScenarioGenerator:
                         vy=vy,
                         ve0=ve0,
                         plot_no=plot_no,
-                        scenario_result_dir=scenario_result_dir,
-                        scenario_gif_dir=scenario_gif_dir,
-                        scenario_image_dir=scenario_image_dir,
+                        plot_no_result_dir=plot_no_result_dir,
                         create_gif=create_gif,
                         create_image=create_image,
                         create_openx=create_openx,
@@ -179,10 +165,8 @@ class CutOutScenarioGenerator:
         vf0: float | None = None,
         scenario_name: str | None = None,
         check_collision_feasibility: bool = True,
-        plot_no: str | None = None,
-        scenario_result_dir: str | Path | None = None,
-        scenario_gif_dir: str | Path | None = None,
-        scenario_image_dir: str | Path | None = None,
+        plot_no: int | None = None,
+        plot_no_result_dir: str | Path | None = None,
         create_gif: bool = False,
         create_image: bool = False,
         create_openx: bool = False,
@@ -218,7 +202,7 @@ class CutOutScenarioGenerator:
             vy = self._lane_width / object_vehicle_lc_duration
         scenario_duration = np.ceil(object_vehicle_lc_duration) + 10
 
-        dummy_vehicle = Vehicle(0, 0, 0, 0, 0)
+        dummy_vehicle = Vehicle(0)
         # Object vehicle
         dx0 = ve0 * self._thw0
         if dx0_ego_lead is not None:
@@ -230,10 +214,10 @@ class CutOutScenarioGenerator:
         vo0 = ve0
         object_vehicle = Vehicle(
             0,
-            self._object_lanelet_id,
-            object_vehicle_s0,
-            object_vehicle_t0,
-            vo0,
+            start_lanelet_id=self._object_lanelet_id,
+            start_s=object_vehicle_s0,
+            start_t=object_vehicle_t0,
+            v0=vo0,
             lc_direction=-1,
             lc_type="vy",
             lc_vy=vy,
@@ -242,20 +226,36 @@ class CutOutScenarioGenerator:
         # f vehicle (slow vehicle)
         f_vehicle_s0 = object_vehicle_s0 + dummy_vehicle.length + dx0_f
         f_vehicle_t0 = object_vehicle_t0
-        f_vehicle = Vehicle(1, self._f_lanelet_id, f_vehicle_s0, f_vehicle_t0, vf0)
+        f_vehicle = Vehicle(
+            1,
+            start_lanelet_id=self._f_lanelet_id,
+            start_s=f_vehicle_s0,
+            start_t=f_vehicle_t0,
+            v0=vf0,
+        )
 
         # Calculate road length
         ego_dist = ve0 * scenario_duration
-        road_length = max(ego_dist, self._min_road_length) + self._ego_s0 + 100
+        road_length = (
+            max(ego_dist, self._min_road_length) + self._ego_s0 + 110
+        )  # TODO(STA): check length of object trajectory as well
         goal_position = max(
             self._ego_s0 + 0.75 * ego_dist,
             f_vehicle_s0 + vf0 * scenario_duration + dummy_vehicle.length,
         )
-        road = Road(
+        ego_configuration = EgoConfiguration(
+            self._ego_lanelet_id,
+            self._ego_s0,
+            self._ego_t0,
+            ve0,
+            target_s=goal_position,
+            target_t=0,
+            target_lanelet_id=self._ego_lanelet_id,
+        )
+        road = SyntheticRoad(
             self._n_lanes,
             self._lane_width,
             segments=[StraightSegment(road_length)],
-            goal_position=goal_position,
             speed_limit=60,
         )
 
@@ -278,18 +278,25 @@ class CutOutScenarioGenerator:
         if not scenario_is_feasible:
             return None
 
-        if scenario_result_dir is not None:
-            scenario_config_dir = scenario_result_dir / "configs"
+        if plot_no_result_dir is not None:
+            scenario_dir = Path(plot_no_result_dir) / scenario_name
+            scenario_dir.mkdir(exist_ok=True)
+
+            scenario_config_dir = scenario_dir / "configs"
             scenario_config_dir.mkdir(exist_ok=True)
             scenario.save(scenario_config_dir)
+
             if create_openx:
-                scenario_result_dir_openx = scenario_result_dir / "openx"
-                scenario_result_dir_openx.mkdir(exist_ok=True)
-                scenario.save(scenario_result_dir_openx, mode="openx")
-        if scenario_image_dir is not None and create_image:
-            scenario.render(scenario_image_dir, dpi=600)
-        if scenario_gif_dir is not None and create_gif:
-            scenario.render_gif(scenario_gif_dir, dpi=600)
+                scenario_openx_dir = scenario_dir / "openx"
+                scenario_openx_dir.mkdir(exist_ok=True)
+                scenario.save(scenario_openx_dir, mode="openx")
+            if create_image or create_gif:
+                scenario_image_dir = scenario_dir / "images"
+                scenario_image_dir.mkdir(exist_ok=True)
+            if create_image:
+                scenario.render(scenario_image_dir, dpi=600)
+            if create_gif:
+                scenario.render_gif(scenario_image_dir, dpi=600)
 
         return scenario
 
@@ -297,7 +304,10 @@ class CutOutScenarioGenerator:
 def unpack_and_run(args_list: list) -> None:
     scenario_generator = CutOutScenarioGenerator(args_list[0])
     scenario_generator.create_all_scenarios(
-        only_plot_no=args_list[1], create_image=True, create_openx=True
+        only_plot_no=args_list[1],
+        create_image=args_list[2],
+        create_openx=args_list[3],
+        create_gif=args_list[4],
     )
 
 
@@ -305,11 +315,18 @@ def generate_all_scenarios() -> None:
     result_dir = Path(__file__).parent / ".." / "results" / "annex3" / "cutout"
     result_dir.mkdir(exist_ok=True, parents=True)
 
+    create_image = True
+    create_openx = True
+    create_gif = False
+
     n_plots_in_regulation = 6
 
     n_workers = n_plots_in_regulation
 
-    all_args_lists = [[result_dir, i + 1] for i in range(n_plots_in_regulation)]
+    all_args_lists = [
+        [result_dir, i + 1, create_image, create_openx, create_gif]
+        for i in range(n_plots_in_regulation)
+    ]
 
     if n_workers == 1:
         for arg_list in all_args_lists:

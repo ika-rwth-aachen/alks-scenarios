@@ -10,7 +10,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from simple_scenario import Scenario, EgoConfiguration, Vehicle
-from simple_scenario.road import Road, StraightSegment
+from simple_scenario.road import SyntheticRoad, StraightSegment
 
 
 class DecelerationScenarioGenerator:
@@ -49,20 +49,7 @@ class DecelerationScenarioGenerator:
         create_image: bool = False,
         create_gif: bool = False,
     ) -> None:
-        # Create folders
-        # Scenarios
-        scenario_result_dir = self._result_dir / "scenarios"
-        scenario_result_dir.mkdir(exist_ok=True)
-
-        # Images
-        scenario_image_dir = self._result_dir / "images"
-        if create_image:
-            scenario_image_dir.mkdir(exist_ok=True)
-
-        # Gifs
-        scenario_gif_dir = self._result_dir / "gifs"
-        if create_gif:
-            scenario_gif_dir.mkdir(exist_ok=True)
+        # Each scenario will get its own subfolder under the result directory
 
         n_scenarios = len(self._gx_values) * len(self._ve0_kmh_values)
 
@@ -72,11 +59,9 @@ class DecelerationScenarioGenerator:
                     self._create_single_scenario(
                         gx,
                         ve0_kmh,
-                        scenario_result_dir,
-                        scenario_gif_dir,
-                        scenario_image_dir,
                         create_openx=create_openx,
                         create_image=create_image,
+                        create_gif=create_gif,
                     )
                     progress_bar.update(1)
 
@@ -84,9 +69,6 @@ class DecelerationScenarioGenerator:
         self,
         gx: float,
         ve0_kmh: float,
-        scenario_result_dir: Path,
-        scenario_gif_dir: Path,
-        scenario_image_dir: Path,
         create_openx: bool = False,
         create_gif: bool = False,
         create_image: bool = False,
@@ -104,7 +86,7 @@ class DecelerationScenarioGenerator:
         )
 
         # Object vehicle
-        object_vehicle_length = Vehicle(0, 0, 0, 0, 0).length
+        object_vehicle_length = Vehicle(0).length
         dx = ve0 * self._thw0
         object_s0 = (
             self._ego_s0 + dx + ego_configuration.length / 2 + object_vehicle_length / 2
@@ -112,7 +94,12 @@ class DecelerationScenarioGenerator:
         object_a0 = -gx * self._g
 
         object_vehicle = Vehicle(
-            0, self._object_lanelet_id, object_s0, self._ego_t0, vo0, object_a0
+            0,
+            start_lanelet_id=self._object_lanelet_id,
+            start_s=object_s0,
+            start_t=self._ego_t0,
+            v0=vo0,
+            a0=object_a0,
         )
 
         # Calculate road length
@@ -127,11 +114,19 @@ class DecelerationScenarioGenerator:
 
         road_length = max(ego_dist, self._min_road_length) + self._ego_s0 + 100
         goal_position = self._ego_s0 + 0.75 * ego_dist
-        road = Road(
+        ego_configuration = EgoConfiguration(
+            self._ego_lanelet_id,
+            self._ego_s0,
+            self._ego_t0,
+            ve0,
+            target_s=goal_position,
+            target_t=0,
+            target_lanelet_id=self._ego_lanelet_id,
+        )
+        road = SyntheticRoad(
             self._n_lanes,
             self._lane_width,
             segments=[StraightSegment(road_length)],
-            goal_position=goal_position,
             speed_limit=60,
         )
 
@@ -144,18 +139,24 @@ class DecelerationScenarioGenerator:
             check_feasibility=False,
         )
 
-        scenario_config_dir = scenario_result_dir / "configs"
+        scenario_dir = self._result_dir / scenario_name
+        scenario_dir.mkdir(exist_ok=True)
+
+        scenario_config_dir = scenario_dir / "configs"
         scenario_config_dir.mkdir(exist_ok=True)
         scenario.save(scenario_config_dir)
 
         if create_openx:
-            scenario_result_dir_openx = scenario_result_dir / "openx"
-            scenario_result_dir_openx.mkdir(exist_ok=True)
-            scenario.save(scenario_result_dir_openx, mode="openx")
+            scenario_openx_dir = scenario_dir / "openx"
+            scenario_openx_dir.mkdir(exist_ok=True)
+            scenario.save(scenario_openx_dir, mode="openx")
+        if create_image or create_gif:
+            scenario_image_dir = scenario_dir / "images"
+            scenario_image_dir.mkdir(exist_ok=True)
         if create_image:
             scenario.render(scenario_image_dir, dpi=600)
         if create_gif:
-            scenario.render_gif(scenario_gif_dir, dpi=600)
+            scenario.render_gif(scenario_image_dir, dpi=600)
 
 
 def generate_all_scenarios() -> None:
@@ -163,7 +164,9 @@ def generate_all_scenarios() -> None:
     result_dir.mkdir(exist_ok=True, parents=True)
 
     scenario_generator = DecelerationScenarioGenerator(result_dir)
-    scenario_generator.create_all_scenarios(create_openx=True, create_image=True)
+    scenario_generator.create_all_scenarios(
+        create_openx=True, create_image=True, create_gif=False
+    )
 
 
 if __name__ == "__main__":

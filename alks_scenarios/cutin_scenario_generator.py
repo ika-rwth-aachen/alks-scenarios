@@ -12,7 +12,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from simple_scenario import Scenario, EgoConfiguration, Vehicle
-from simple_scenario.road import Road, StraightSegment
+from simple_scenario.road import SyntheticRoad, StraightSegment
 
 
 class CutInScenarioGenerator:
@@ -35,7 +35,7 @@ class CutInScenarioGenerator:
         vy_max = 3
         dx0_min = 0
         dx0_max = 60
-        # Vary
+
         vy_step = 0.1
         dx0_step = 1
         self._vy_values = np.arange(vy_min + vy_step, vy_max + vy_step, vy_step)
@@ -82,19 +82,7 @@ class CutInScenarioGenerator:
         plot_no_result_dir = self._result_dir / f"plot_{plot_no:02d}"
         plot_no_result_dir.mkdir(exist_ok=True)
 
-        # Scenarios
-        scenario_result_dir = plot_no_result_dir / "scenarios"
-        scenario_result_dir.mkdir(exist_ok=True)
-
-        # Images
-        scenario_image_dir = plot_no_result_dir / "images"
-        if create_image:
-            scenario_image_dir.mkdir(exist_ok=True)
-
-        # Gifs
-        scenario_gif_dir = plot_no_result_dir / "gifs"
-        if create_gif:
-            scenario_gif_dir.mkdir(exist_ok=True)
+        # Each scenario will get its own subfolder under the plot directory
 
         vo0_kmh = ve0_kmh - dv0_kmh
         ve0 = ve0_kmh / 3.6
@@ -111,9 +99,7 @@ class CutInScenarioGenerator:
                         vy,
                         ve0,
                         vo0,
-                        scenario_result_dir,
-                        scenario_gif_dir,
-                        scenario_image_dir,
+                        plot_no_result_dir,
                         create_gif=create_gif,
                         create_image=create_image,
                         create_openx=create_openx,
@@ -127,9 +113,7 @@ class CutInScenarioGenerator:
         vy: float,
         ve0: float,
         vo0: float,
-        scenario_result_dir: Path,
-        scenario_gif_dir: Path,
-        scenario_image_dir: Path,
+        plot_no_result_dir: Path,
         create_gif: bool = False,
         create_image: bool = False,
         create_openx: bool = False,
@@ -142,14 +126,17 @@ class CutInScenarioGenerator:
 
         # Create simple scenario object
         ego_configuration = EgoConfiguration(
-            self._ego_lanelet_id, self._ego_s0, self._ego_t0, ve0
+            start_lanelet_id=self._ego_lanelet_id,
+            start_s=self._ego_s0,
+            start_t=self._ego_t0,
+            v0=ve0,
         )
 
         # Calculate object_vehicle_t0 from dy0
         ego_width = ego_configuration.width
-        dummy_vehicle = Vehicle(0, 0, 0, 0, 0)
+        dummy_vehicle = Vehicle(0)
         object_vehicle_width = dummy_vehicle.width
-        object_vehicle_t0_from_ego_llt = ego_configuration.t0 - (
+        object_vehicle_t0_from_ego_llt = self._ego_t0 - (
             self._dy0 + ego_width / 2 + object_vehicle_width / 2
         )
         object_vehicle_t0 = object_vehicle_t0_from_ego_llt + self._lane_width
@@ -165,10 +152,10 @@ class CutInScenarioGenerator:
         object_vehicle_lc_duration = self._dy0 / vy
         object_vehicle = Vehicle(
             0,
-            self._object_lanelet_id,
-            object_vehicle_s0,
-            object_vehicle_t0,
-            vo0,
+            start_lanelet_id=self._object_lanelet_id,
+            start_s=object_vehicle_s0,
+            start_t=object_vehicle_t0,
+            v0=vo0,
             lc_direction=1,
             lc_type="vy",
             lc_vy=vy,
@@ -179,11 +166,19 @@ class CutInScenarioGenerator:
         ego_dist = ve0 * scenario_duration
         road_length = max(ego_dist, self._min_road_length) + self._ego_s0 + 100
         goal_position = self._ego_s0 + 0.75 * ego_dist
-        road = Road(
+        ego_configuration = EgoConfiguration(
+            start_lanelet_id=self._ego_lanelet_id,
+            start_s=self._ego_s0,
+            start_t=self._ego_t0,
+            v0=ve0,
+            target_s=goal_position,
+            target_t=0,
+            target_lanelet_id=self._ego_lanelet_id,
+        )
+        road = SyntheticRoad(
             self._n_lanes,
             self._lane_width,
             segments=[StraightSegment(road_length)],
-            goal_position=goal_position,
             speed_limit=60,
         )
 
@@ -196,24 +191,33 @@ class CutInScenarioGenerator:
             check_feasibility=False,
         )
 
-        scenario_config_dir = scenario_result_dir / "configs"
+        scenario_dir = plot_no_result_dir / scenario_name
+        scenario_dir.mkdir(exist_ok=True)
+
+        scenario_config_dir = scenario_dir / "configs"
         scenario_config_dir.mkdir(exist_ok=True)
         scenario.save(scenario_config_dir)
 
         if create_openx:
-            scenario_result_dir_openx = scenario_result_dir / "openx"
-            scenario_result_dir_openx.mkdir(exist_ok=True)
-            scenario.save(scenario_result_dir_openx, mode="openx")
+            scenario_openx_dir = scenario_dir / "openx"
+            scenario_openx_dir.mkdir(exist_ok=True)
+            scenario.save(scenario_openx_dir, mode="openx")
+        if create_image or create_gif:
+            scenario_image_dir = scenario_dir / "images"
+            scenario_image_dir.mkdir(exist_ok=True)
         if create_image:
             scenario.render(scenario_image_dir, dpi=600)
         if create_gif:
-            scenario.render_gif(scenario_gif_dir, dpi=600)
+            scenario.render_gif(scenario_image_dir, dpi=600)
 
 
 def unpack_and_run(args_list: list) -> None:
     scenario_generator = CutInScenarioGenerator(args_list[0])
     scenario_generator.create_all_scenarios(
-        only_plot_no=args_list[1], create_image=True, create_openx=True
+        only_plot_no=args_list[1],
+        create_image=args_list[2],
+        create_openx=args_list[3],
+        create_gif=args_list[4],
     )
 
 
@@ -221,11 +225,18 @@ def generate_all_scenarios() -> None:
     result_dir = Path(__file__).parent / ".." / "results" / "annex3" / "cutin"
     result_dir.mkdir(exist_ok=True, parents=True)
 
-    n_plots_in_regulation = 14
+    create_image = True
+    create_openx = True
+    create_gif = False
+
+    n_plots_in_regulation = 14  # Number of plots defined in the regulation
 
     n_workers = n_plots_in_regulation
 
-    all_args_lists = [[result_dir, i + 1] for i in range(n_plots_in_regulation)]
+    all_args_lists = [
+        [result_dir, i + 1, create_image, create_openx, create_gif]
+        for i in range(n_plots_in_regulation)
+    ]
 
     if n_workers == 1:
         for arg_list in all_args_lists:
