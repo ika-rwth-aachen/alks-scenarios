@@ -11,6 +11,7 @@ resolution-markers = [
 [[package]]
 name = "alks-scenarios"
 version = "0.2.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },
@@ -43,6 +44,7 @@ dev = [
 requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "numpy", specifier = ">=1.24.4" },
+    { name = "simple-scenario", extras = ["commonroad"], editable = "../simple-scenario" },
     { name = "simple-scenario", extras = ["commonroad"], specifier = ">=1.0.1" },
     { name = "tqdm", specifier = ">=4.67.1" },
 ]
@@ -3795,6 +3797,8 @@ wheels = [
 [[package]]
 name = "simple-scenario"
 version = "1.0.1"
+source = { editable = "../simple-scenario" }
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "commonroad-vehicle-models" },
@@ -3830,6 +3834,80 @@ commonroad = [
     { name = "commonroad-drivability-checker" },
     { name = "commonroad-io" },
     { name = "shapely" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "commonroad-drivability-checker", marker = "extra == 'commonroad'", specifier = "==2022.1" },
+    { name = "commonroad-io", marker = "extra == 'commonroad'", specifier = "==2022.1" },
+    { name = "commonroad-vehicle-models", specifier = "==3.0.2" },
+    { name = "lanelet2", specifier = ">=1.2.2" },
+    { name = "loguru", specifier = ">=0.7.3" },
+    { name = "lxd-io", marker = "extra == 'lxd'", specifier = ">=0.4.5" },
+    { name = "lxml", specifier = ">=5.3.1" },
+    { name = "matplotlib", specifier = ">=3.7.5" },
+    { name = "numpy", specifier = ">=1.24.4" },
+    { name = "pillow", specifier = ">=10.4.0" },
+    { name = "pyclothoids", specifier = ">=0.1.5" },
+    { name = "pyproj", specifier = ">=3.5.0" },
+    { name = "scenariogeneration", specifier = ">=0.14.9" },
+    { name = "shapely", marker = "extra == 'commonroad'", specifier = "==1.8.5.post1" },
+    { name = "tqdm", specifier = ">=4.67.1" },
+    { name = "typer", specifier = ">=0.15.2" },
+]
+provides-extras = ["commonroad", "lxd"]
+
+[package.metadata.requires-dev]
+build = [
+    { name = "build", specifier = ">=1.2.2.post1" },
+    { name = "twine", specifier = ">=6.1.0" },
+]
+dev = [
+    { name = "coverage", specifier = ">=7.6.1" },
+    { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "nbval", specifier = ">=0.11.0" },
+    { name = "pre-commit", specifier = ">=3.5.0" },
+    { name = "pycobertura", specifier = ">=3.3.2" },
+    { name = "pytest", specifier = ">=8.3.5" },
+    { name = "pytest-cov", specifier = ">=5.0.0" },
+    { name = "ruff", specifier = ">=0.10.0" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "commonroad-drivability-checker", marker = "extra == 'commonroad'", specifier = "==2022.1" },
+    { name = "commonroad-io", marker = "extra == 'commonroad'", specifier = "==2022.1" },
+    { name = "commonroad-vehicle-models", specifier = "==3.0.2" },
+    { name = "lanelet2", specifier = ">=1.2.2" },
+    { name = "loguru", specifier = ">=0.7.3" },
+    { name = "lxd-io", marker = "extra == 'lxd'", specifier = ">=0.4.5" },
+    { name = "lxml", specifier = ">=5.3.1" },
+    { name = "matplotlib", specifier = ">=3.7.5" },
+    { name = "numpy", specifier = ">=1.24.4" },
+    { name = "pillow", specifier = ">=10.4.0" },
+    { name = "pyclothoids", specifier = ">=0.1.5" },
+    { name = "pyproj", specifier = ">=3.5.0" },
+    { name = "scenariogeneration", specifier = ">=0.14.9" },
+    { name = "shapely", marker = "extra == 'commonroad'", specifier = "==1.8.5.post1" },
+    { name = "tqdm", specifier = ">=4.67.1" },
+    { name = "typer", specifier = ">=0.15.2" },
+]
+provides-extras = ["commonroad", "lxd"]
+
+[package.metadata.requires-dev]
+build = [
+    { name = "build", specifier = ">=1.2.2.post1" },
+    { name = "twine", specifier = ">=6.1.0" },
+]
+dev = [
+    { name = "coverage", specifier = ">=7.6.1" },
+    { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "nbval", specifier = ">=0.11.0" },
+    { name = "pre-commit", specifier = ">=3.5.0" },
+    { name = "pycobertura", specifier = ">=3.3.2" },
+    { name = "pytest", specifier = ">=8.3.5" },
+    { name = "pytest-cov", specifier = ">=5.0.0" },
+    { name = "ruff", specifier = ">=0.10.0" },
 ]
 
 [[package]]

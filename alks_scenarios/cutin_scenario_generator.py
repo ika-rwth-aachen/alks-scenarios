@@ -4,6 +4,7 @@ Create cutin scenarios from UNECE R157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, An
 
 from __future__ import annotations
 
+import json
 import multiprocessing as mp
 import numpy as np
 
@@ -57,6 +58,8 @@ class CutInScenarioGenerator:
         create_openx: bool = False,
         create_image: bool = False,
         create_gif: bool = False,
+        create_text: bool = False,
+        create_openlabel: bool = False,
     ) -> None:
         for plot_no, params in self._params_per_plot_no.items():
             if only_plot_no is not None and plot_no != only_plot_no:
@@ -67,6 +70,8 @@ class CutInScenarioGenerator:
                 create_gif=create_gif,
                 create_image=create_image,
                 create_openx=create_openx,
+                create_text=create_text,
+                create_openlabel=create_openlabel,
             )
 
     def _create_scenarios_of_plot_no(
@@ -77,6 +82,8 @@ class CutInScenarioGenerator:
         create_openx: bool = False,
         create_image: bool = False,
         create_gif: bool = False,
+        create_text: bool = False,
+        create_openlabel: bool = False,
     ) -> None:
         # Create folders
         plot_no_result_dir = self._result_dir / f"plot_{plot_no:02d}"
@@ -103,6 +110,8 @@ class CutInScenarioGenerator:
                         create_gif=create_gif,
                         create_image=create_image,
                         create_openx=create_openx,
+                        create_text=create_text,
+                        create_openlabel=create_openlabel,
                     )
                     progress_bar.update(1)
 
@@ -117,6 +126,8 @@ class CutInScenarioGenerator:
         create_gif: bool = False,
         create_image: bool = False,
         create_openx: bool = False,
+        create_text: bool = False,
+        create_openlabel: bool = False,
     ) -> None:
         ve0_kmh = ve0 * 3.6
         vo0_kmh = vo0 * 3.6
@@ -198,9 +209,11 @@ class CutInScenarioGenerator:
         scenario_config_dir.mkdir(exist_ok=True)
         scenario.save(scenario_config_dir)
 
-        if create_openx:
-            scenario_openx_dir = scenario_dir / "openx"
+        scenario_openx_dir = scenario_dir / "openx"
+
+        if create_openx or create_openlabel or create_text:
             scenario_openx_dir.mkdir(exist_ok=True)
+        if create_openx:
             scenario.save(scenario_openx_dir, mode="openx")
         if create_image or create_gif:
             scenario_image_dir = scenario_dir / "images"
@@ -209,6 +222,155 @@ class CutInScenarioGenerator:
             scenario.render(scenario_image_dir, dpi=600)
         if create_gif:
             scenario.render_gif(scenario_image_dir, dpi=600)
+        if create_text:
+            _create_info_text(
+                scenario_openx_dir, scenario_name, plot_no, ve0_kmh, dv0_kmh, dx0, vy
+            )
+        if create_openlabel:
+            vo0_kmh = int(np.round(vo0 * 3.6))
+            _create_openlabel(
+                scenario_openx_dir,
+                scenario_name,
+                int(plot_no),
+                int(ve0_kmh),
+                int(dv0_kmh),
+                float(dx0),
+                float(vy),
+                vo0_kmh,
+                float(object_vehicle_lc_duration),
+                float(self._ego_s0),
+                float(self._ego_t0),
+                int(self._ego_lanelet_id),
+                float(object_vehicle_s0),
+                float(object_vehicle_t0),
+                int(self._object_lanelet_id),
+                float(self._dy0),
+            )
+
+
+def _create_openlabel(
+    scenario_openx_dir: Path,
+    scenario_name: str,
+    plot_no: int,
+    ve0_kmh: int,
+    dv0_kmh: int,
+    dx0: float,
+    vy: float,
+    vo0_kmh: int,
+    object_vehicle_lc_duration: float,
+    ego_s0: float,
+    ego_t0: float,
+    ego_lanelet_id: int,
+    object_vehicle_s0: float,
+    object_vehicle_t0: float,
+    object_lanelet_id: int,
+    dy0: float,
+) -> None:
+    openlabel = {
+        "openlabel": {
+            "metadata": {
+                "schema_version": "1.0.0",
+                "name": scenario_name,
+                "description": (
+                    "Cut-in scenario from UN/ECE R.157 "
+                    "E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3"
+                ),
+                "annotator": "alks-scenarios",
+                "comment": f"Plot {plot_no}",
+            },
+            "objects": {
+                "0": {
+                    "name": "ego",
+                    "type": "Ego",
+                    "object_data": {
+                        "text": [{"name": "vehicle_type", "val": "medium"}],
+                        "num": [
+                            {"name": "v0_kmh", "val": ve0_kmh},
+                            {"name": "s0_m", "val": ego_s0},
+                            {"name": "t0_m", "val": ego_t0},
+                            {"name": "lanelet_id", "val": ego_lanelet_id},
+                        ],
+                    },
+                },
+                "1": {
+                    "name": "object_vehicle",
+                    "type": "Vehicle",
+                    "object_data": {
+                        "text": [{"name": "vehicle_type", "val": "medium"}],
+                        "num": [
+                            {"name": "v0_kmh", "val": vo0_kmh},
+                            {"name": "dx0_m", "val": dx0},
+                            {"name": "s0_m", "val": object_vehicle_s0},
+                            {"name": "t0_m", "val": object_vehicle_t0},
+                            {"name": "lanelet_id", "val": object_lanelet_id},
+                        ],
+                    },
+                },
+            },
+            "actions": {
+                "0": {
+                    "name": "cut_in",
+                    "type": "CutIn",
+                    "action_data": {
+                        "text": [
+                            {"name": "direction", "val": "left"},
+                            {"name": "lc_type", "val": "constant_vy"},
+                            {
+                                "name": "regulation_reference",
+                                "val": "UN/ECE R.157 Annex 3 Table 2",
+                            },
+                        ],
+                        "num": [
+                            {"name": "vy_m_per_s", "val": vy},
+                            {"name": "duration_s", "val": object_vehicle_lc_duration},
+                            {"name": "dy0_m", "val": dy0},
+                        ],
+                    },
+                }
+            },
+            "relations": {
+                "0": {
+                    "name": "CutInActor",
+                    "type": "IsActorOf",
+                    "elements": {
+                        "objects": {"1": {}},
+                        "actions": {"0": {}},
+                    },
+                }
+            },
+            "tags": {
+                "0": {"name": "scenario_type", "type": "CutIn"},
+                "1": {"name": "regulation_type", "type": "ALKS"},
+            },
+        }
+    }
+    openlabel_path = scenario_openx_dir / f"{scenario_name}.json"
+    with open(openlabel_path, "w") as f:
+        json.dump(openlabel, f, indent=2)
+    logger.info(f"Created OpenLABEL file at {openlabel_path}")
+
+
+def _create_info_text(
+    scenario_openx_dir: Path,
+    scenario_name: str,
+    plot_no: int,
+    ve0_kmh: int,
+    dv0_kmh: int,
+    dx0: float,
+    vy: float,
+) -> None:
+    info_text_path = scenario_openx_dir / f"{scenario_name}.txt"
+    with open(info_text_path, "w") as f:
+        f.write(
+            f"This is a scenario based on the UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4 for the Cut-in defined in Annex 3. The Parameters are given here: ve0: initial speed of the ego vehicle, dv0: difference in initial speed between ego and object vehicle, dx0: initial longitudinal distance between ego and object vehicle, vy: lateral speed of the object vehicle during the cut-in maneuver.\n"
+        )
+        f.write(f"Scenario Name: {scenario_name}\n")
+        f.write(f"Plot No: {plot_no}\n")
+        f.write(f"ve0 (km/h): {ve0_kmh}\n")
+        f.write(f"dv0 (km/h): {dv0_kmh}\n")
+        f.write(f"dx0 (m): {dx0:.1f}\n")
+        f.write(f"vy (m/s): {vy:.1f}\n")
+    logger.info(f"Created info text at {info_text_path}")
 
 
 def unpack_and_run(args_list: list) -> None:
@@ -218,6 +380,8 @@ def unpack_and_run(args_list: list) -> None:
         create_image=args_list[2],
         create_openx=args_list[3],
         create_gif=args_list[4],
+        create_text=args_list[5],
+        create_openlabel=args_list[6],
     )
 
 
@@ -228,13 +392,23 @@ def generate_all_scenarios() -> None:
     create_image = True
     create_openx = True
     create_gif = False
+    create_text = True
+    create_openlabel = True
 
-    n_plots_in_regulation = 14  # Number of plots defined in the regulation
+    n_plots_in_regulation = 1  # Number of plots defined in the regulation
 
     n_workers = n_plots_in_regulation
 
     all_args_lists = [
-        [result_dir, i + 1, create_image, create_openx, create_gif]
+        [
+            result_dir,
+            i + 1,
+            create_image,
+            create_openx,
+            create_gif,
+            create_text,
+            create_openlabel,
+        ]
         for i in range(n_plots_in_regulation)
     ]
 
