@@ -162,3 +162,4 @@ cython_debug/
 examples/*.gif
 results/
 test/test_results/
+.vscode/

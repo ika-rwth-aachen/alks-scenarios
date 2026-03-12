@@ -45,7 +45,6 @@ build = [
 ]
 
 
-
 [tool.setuptools]
 packages = [
     "alks_scenarios"
@@ -141,6 +140,7 @@ ignore = [
     "TID252",
     "RUF012",
     "SIM117",
+    "TD003",
 ]
 
 [tool.ruff.lint.per-file-ignores]

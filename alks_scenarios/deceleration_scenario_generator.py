@@ -94,7 +94,12 @@ class DecelerationScenarioGenerator:
         object_a0 = -gx * self._g
 
         object_vehicle = Vehicle(
-            0, start_lanelet_id=self._object_lanelet_id, start_s=object_s0, start_t=self._ego_t0, v0=vo0, a0=object_a0
+            0,
+            start_lanelet_id=self._object_lanelet_id,
+            start_s=object_s0,
+            start_t=self._ego_t0,
+            v0=vo0,
+            a0=object_a0,
         )
 
         # Calculate road length
@@ -110,7 +115,13 @@ class DecelerationScenarioGenerator:
         road_length = max(ego_dist, self._min_road_length) + self._ego_s0 + 100
         goal_position = self._ego_s0 + 0.75 * ego_dist
         ego_configuration = EgoConfiguration(
-            self._ego_lanelet_id, self._ego_s0, self._ego_t0, ve0, target_s=goal_position, target_t=0, target_lanelet_id=self._ego_lanelet_id
+            self._ego_lanelet_id,
+            self._ego_s0,
+            self._ego_t0,
+            ve0,
+            target_s=goal_position,
+            target_t=0,
+            target_lanelet_id=self._ego_lanelet_id,
         )
         road = SyntheticRoad(
             self._n_lanes,
@@ -153,7 +164,9 @@ def generate_all_scenarios() -> None:
     result_dir.mkdir(exist_ok=True, parents=True)
 
     scenario_generator = DecelerationScenarioGenerator(result_dir)
-    scenario_generator.create_all_scenarios(create_openx=True, create_image=True, create_gif=False)
+    scenario_generator.create_all_scenarios(
+        create_openx=True, create_image=True, create_gif=False
+    )
 
 
 if __name__ == "__main__":

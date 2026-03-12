@@ -10,7 +10,7 @@ resolution-markers = [
 
 [[package]]
 name = "alks-scenarios"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },
@@ -43,7 +43,7 @@ dev = [
 requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "numpy", specifier = ">=1.24.4" },
-    { name = "simple-scenario", extras = ["commonroad"], specifier = ">=1.0.0" },
+    { name = "simple-scenario", extras = ["commonroad"], specifier = ">=1.0.1" },
     { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
@@ -3794,7 +3794,7 @@ wheels = [
 
 [[package]]
 name = "simple-scenario"
-version = "1.0.0"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "commonroad-vehicle-models" },
@@ -3820,9 +3820,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f6/25/e8452e6b9acbcff81be13821ff90362e2d2f9897bd543c62e239f20aa16c/simple_scenario-1.0.0.tar.gz", hash = "sha256:d1731335520e76656c280e807772742435b4099996a4ff2f999ce53432cef524", size = 61246, upload-time = "2026-03-06T10:15:30.941Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/30/fe/4da5c9db3a2c54a1a1e82370aa262a7c345a4306b3b5496c2534111abc28/simple_scenario-1.0.1.tar.gz", hash = "sha256:ac07b5faffe57bb7625b99892c483fc260220ae95c63349188bef31fcca81d23", size = 62801, upload-time = "2026-03-12T08:35:17.065Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/65/8b/46f2133f43cf1858d45d01f1a4734ecdd484bb0434974681a2c481846ba7/simple_scenario-1.0.0-py3-none-any.whl", hash = "sha256:0b9516bf391fafbe1366e1a35ffd525a2ca3d5aa0fbb41842d97def3fd6e29b8", size = 62278, upload-time = "2026-03-06T10:15:29.643Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/da/46963494fc12c2dea4ba5579018dffaf6406d5adb871cb252e1b1d337f3b/simple_scenario-1.0.1-py3-none-any.whl", hash = "sha256:0a88a3c283cdc4241d9816ed364717772fb6605589f996c3de47b2682fa00a6a", size = 62589, upload-time = "2026-03-12T08:35:15.782Z" },
 ]
 
 [package.optional-dependencies]

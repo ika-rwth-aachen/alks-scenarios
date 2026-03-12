@@ -14,6 +14,7 @@ from tqdm import tqdm
 from simple_scenario import Scenario, EgoConfiguration, Vehicle
 from simple_scenario.road import SyntheticRoad, StraightSegment
 
+
 class CutInScenarioGenerator:
     def __init__(self, result_dir: str | Path) -> None:
         self._result_dir = Path(result_dir)
@@ -34,9 +35,9 @@ class CutInScenarioGenerator:
         vy_max = 3
         dx0_min = 0
         dx0_max = 60
-        # Varying values
-        vy_step = 3.0
-        dx0_step = 20
+
+        vy_step = 0.1
+        dx0_step = 1
         self._vy_values = np.arange(vy_min + vy_step, vy_max + vy_step, vy_step)
         self._dx0_values = np.arange(dx0_min, dx0_max + dx0_step, dx0_step)
 
@@ -125,7 +126,10 @@ class CutInScenarioGenerator:
 
         # Create simple scenario object
         ego_configuration = EgoConfiguration(
-            self._ego_lanelet_id, self._ego_s0, self._ego_t0, ve0
+            start_lanelet_id=self._ego_lanelet_id,
+            start_s=self._ego_s0,
+            start_t=self._ego_t0,
+            v0=ve0,
         )
 
         # Calculate object_vehicle_t0 from dy0
@@ -148,7 +152,7 @@ class CutInScenarioGenerator:
         object_vehicle_lc_duration = self._dy0 / vy
         object_vehicle = Vehicle(
             0,
-            start_lanelet_id= self._object_lanelet_id,
+            start_lanelet_id=self._object_lanelet_id,
             start_s=object_vehicle_s0,
             start_t=object_vehicle_t0,
             v0=vo0,
@@ -163,7 +167,13 @@ class CutInScenarioGenerator:
         road_length = max(ego_dist, self._min_road_length) + self._ego_s0 + 100
         goal_position = self._ego_s0 + 0.75 * ego_dist
         ego_configuration = EgoConfiguration(
-            self._ego_lanelet_id, self._ego_s0, self._ego_t0, ve0, target_s=goal_position , target_t=0 , target_lanelet_id=self._ego_lanelet_id
+            start_lanelet_id=self._ego_lanelet_id,
+            start_s=self._ego_s0,
+            start_t=self._ego_t0,
+            v0=ve0,
+            target_s=goal_position,
+            target_t=0,
+            target_lanelet_id=self._ego_lanelet_id,
         )
         road = SyntheticRoad(
             self._n_lanes,
@@ -204,14 +214,17 @@ class CutInScenarioGenerator:
 def unpack_and_run(args_list: list) -> None:
     scenario_generator = CutInScenarioGenerator(args_list[0])
     scenario_generator.create_all_scenarios(
-        only_plot_no=args_list[1], create_image=args_list[2], create_openx=args_list[3], create_gif=args_list[4]
+        only_plot_no=args_list[1],
+        create_image=args_list[2],
+        create_openx=args_list[3],
+        create_gif=args_list[4],
     )
 
 
 def generate_all_scenarios() -> None:
     result_dir = Path(__file__).parent / ".." / "results" / "annex3" / "cutin"
     result_dir.mkdir(exist_ok=True, parents=True)
-    
+
     create_image = True
     create_openx = True
     create_gif = False
@@ -220,7 +233,10 @@ def generate_all_scenarios() -> None:
 
     n_workers = n_plots_in_regulation
 
-    all_args_lists = [[result_dir, i + 1, create_image, create_openx, create_gif] for i in range(n_plots_in_regulation)]
+    all_args_lists = [
+        [result_dir, i + 1, create_image, create_openx, create_gif]
+        for i in range(n_plots_in_regulation)
+    ]
 
     if n_workers == 1:
         for arg_list in all_args_lists:

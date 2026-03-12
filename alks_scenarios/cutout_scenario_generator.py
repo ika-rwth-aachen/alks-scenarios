@@ -165,7 +165,7 @@ class CutOutScenarioGenerator:
         vf0: float | None = None,
         scenario_name: str | None = None,
         check_collision_feasibility: bool = True,
-        plot_no: str | None = None,
+        plot_no: int | None = None,
         plot_no_result_dir: str | Path | None = None,
         create_gif: bool = False,
         create_image: bool = False,
@@ -226,17 +226,31 @@ class CutOutScenarioGenerator:
         # f vehicle (slow vehicle)
         f_vehicle_s0 = object_vehicle_s0 + dummy_vehicle.length + dx0_f
         f_vehicle_t0 = object_vehicle_t0
-        f_vehicle = Vehicle(1, start_lanelet_id=self._f_lanelet_id, start_s=f_vehicle_s0, start_t=f_vehicle_t0, v0=vf0)
+        f_vehicle = Vehicle(
+            1,
+            start_lanelet_id=self._f_lanelet_id,
+            start_s=f_vehicle_s0,
+            start_t=f_vehicle_t0,
+            v0=vf0,
+        )
 
         # Calculate road length
         ego_dist = ve0 * scenario_duration
-        road_length = max(ego_dist, self._min_road_length) + self._ego_s0 + 110 # TODO: check length of object trajectory as well
+        road_length = (
+            max(ego_dist, self._min_road_length) + self._ego_s0 + 110
+        )  # TODO(STA): check length of object trajectory as well
         goal_position = max(
             self._ego_s0 + 0.75 * ego_dist,
             f_vehicle_s0 + vf0 * scenario_duration + dummy_vehicle.length,
         )
         ego_configuration = EgoConfiguration(
-            self._ego_lanelet_id, self._ego_s0, self._ego_t0, ve0, target_s=goal_position, target_t=0, target_lanelet_id=self._ego_lanelet_id
+            self._ego_lanelet_id,
+            self._ego_s0,
+            self._ego_t0,
+            ve0,
+            target_s=goal_position,
+            target_t=0,
+            target_lanelet_id=self._ego_lanelet_id,
         )
         road = SyntheticRoad(
             self._n_lanes,
@@ -290,7 +304,10 @@ class CutOutScenarioGenerator:
 def unpack_and_run(args_list: list) -> None:
     scenario_generator = CutOutScenarioGenerator(args_list[0])
     scenario_generator.create_all_scenarios(
-        only_plot_no=args_list[1], create_image=args_list[2], create_openx=args_list[3], create_gif=args_list[4]
+        only_plot_no=args_list[1],
+        create_image=args_list[2],
+        create_openx=args_list[3],
+        create_gif=args_list[4],
     )
 
 
@@ -306,7 +323,10 @@ def generate_all_scenarios() -> None:
 
     n_workers = n_plots_in_regulation
 
-    all_args_lists = [[result_dir, i + 1, create_image, create_openx, create_gif] for i in range(n_plots_in_regulation)]
+    all_args_lists = [
+        [result_dir, i + 1, create_image, create_openx, create_gif]
+        for i in range(n_plots_in_regulation)
+    ]
 
     if n_workers == 1:
         for arg_list in all_args_lists:
