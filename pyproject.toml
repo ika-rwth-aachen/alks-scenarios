@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "alks-scenarios"
 authors = [
-    {name = "Lennart Vater", email = "lennart.vater@rwth-aachen.de"},
+    {name = "Lennart Vater", email = "opensourcer@rwth-aachen.de"},
     {name = "Sven Tarlowski", email = "sven.tarlowski@ika.rwth-aachen.de"},
     {name = "ika - RWTH Aachen University", email = "opensource@ika.rwth-aachen.de"}
 ]

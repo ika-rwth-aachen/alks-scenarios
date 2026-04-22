@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import multiprocessing as mp
 import numpy as np
 
@@ -57,6 +58,8 @@ class CutOutScenarioGenerator:
         create_openx: bool = False,
         create_image: bool = False,
         create_gif: bool = False,
+        create_text: bool = False,
+        create_openlabel: bool = False,
     ) -> None:
         if result_dir is None:
             if self._result_dir is None:
@@ -76,6 +79,8 @@ class CutOutScenarioGenerator:
                 create_gif=create_gif,
                 create_image=create_image,
                 create_openx=create_openx,
+                create_text=create_text,
+                create_openlabel=create_openlabel,
             )
 
     def get_single_scenario_lcd_thw(
@@ -129,6 +134,8 @@ class CutOutScenarioGenerator:
         create_openx: bool = False,
         create_image: bool = False,
         create_gif: bool = False,
+        create_text: bool = False,
+        create_openlabel: bool = False,
     ) -> None:
         # Create folders
         plot_no_result_dir = self._result_dir / f"plot_{plot_no:02d}"
@@ -152,6 +159,8 @@ class CutOutScenarioGenerator:
                         create_gif=create_gif,
                         create_image=create_image,
                         create_openx=create_openx,
+                        create_text=create_text,
+                        create_openlabel=create_openlabel,
                     )
                     progress_bar.update(1)
 
@@ -170,6 +179,8 @@ class CutOutScenarioGenerator:
         create_gif: bool = False,
         create_image: bool = False,
         create_openx: bool = False,
+        create_text: bool = False,
+        create_openlabel: bool = False,
     ) -> Scenario | None:
         ve0_kmh = ve0 * 3.6
         ve0_kmh = int(np.round(ve0_kmh))
@@ -286,10 +297,23 @@ class CutOutScenarioGenerator:
             scenario_config_dir.mkdir(exist_ok=True)
             scenario.save(scenario_config_dir)
 
-            if create_openx:
-                scenario_openx_dir = scenario_dir / "openx"
+            scenario_openx_dir = scenario_dir / "openx"
+            if create_openx or create_openlabel or create_text:
                 scenario_openx_dir.mkdir(exist_ok=True)
+            if create_openx:
                 scenario.save(scenario_openx_dir, mode="openx")
+            if create_text:
+                _create_info_text(scenario_openx_dir, scenario_name, ve0_kmh, dx0_f, vy)
+            if create_openlabel:
+                _create_openlabel(
+                    scenario_openx_dir,
+                    scenario_name,
+                    ve0_kmh,
+                    dx0_f,
+                    vy,
+                    self._n_lanes,
+                    self._lane_width,
+                )
             if create_image or create_gif:
                 scenario_image_dir = scenario_dir / "images"
                 scenario_image_dir.mkdir(exist_ok=True)
@@ -301,6 +325,102 @@ class CutOutScenarioGenerator:
         return scenario
 
 
+def _create_info_text(
+    scenario_openx_dir: Path,
+    scenario_name: str,
+    ve0_kmh: int,
+    dx0_f: float,
+    vy: float,
+) -> None:
+    info_text_path = scenario_openx_dir / f"{scenario_name}.txt"
+    with Path.open(info_text_path, "w") as f:
+        f.write(
+            "This is a scenario based on the UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4 "
+            "for the Cut-out defined in Annex 3. The parameters are given here: ve0: initial speed "
+            "of the ego vehicle, dx0f: initial longitudinal distance between the object vehicle and "
+            "the slow front vehicle, vy: lateral speed of the object vehicle during the cut-out maneuver.\n"
+        )
+        f.write(f"Scenario Name: {scenario_name}\n")
+        f.write(f"ve0 (km/h): {ve0_kmh}\n")
+        f.write(f"dx0f (m): {dx0_f:.1f}\n")
+        f.write(f"vy (m/s): {vy:.1f}\n")
+    logger.info(f"Created info text at {info_text_path}")
+
+
+def _create_openlabel(
+    scenario_openx_dir: Path,
+    scenario_name: str,
+    ve0_kmh: int,
+    dx0_f: float,
+    vy: float,
+    lane_count: int,
+    lane_width: float,
+) -> None:
+    openlabel = {
+        "openlabel": {
+            "metadata": {
+                "schema_version": "1.0.0",
+                "tagged_file": f"{scenario_name}.xosc",
+                "name": scenario_name,
+                "ScenarioId": scenario_name,
+                "description": (
+                    "Cut-out scenario from UN/ECE R.157 "
+                    "E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3"
+                ),
+                "annotator": "ika RWTH-Aachen",
+                "comment": f"ve0 (km/h): {ve0_kmh}, dx0f (m): {dx0_f:.1f}, vy (m/s): {vy:.1f}",
+                "ScenarioDatabase": "ALKS - Simple Scenario",
+                "OpenXAvailability": {"Osc": True, "Odr": True, "Osg": False},
+            },
+            "ontologies": {
+                "0": {"uri": "https://openlabel.asam.net/V1-0-0/ontologies/"}
+            },
+            "tags": {
+                # Primary scenario behaviour
+                "0": {"type": "MotionCutOut", "ontology_uid": "0"},
+                # Object vehicle performs a right lane change (lc_direction=-1)
+                "1": {"type": "MotionLaneChangeRight", "ontology_uid": "0"},
+                # Ego vehicle drives straight throughout
+                "2": {"type": "MotionDrive", "ontology_uid": "0", "motionDriveValue": ve0_kmh},
+                # Road type: 2-lane motorway without active traffic management
+                "3": {"type": "MotorwayUnmanaged", "ontology_uid": "0"},
+                # Road geometry: straight (StraightSegment only, no curves)
+                "4": {"type": "HorizontalStraights", "ontology_uid": "0"},
+                # Road geometry: no gradient defined
+                "5": {"type": "LongitudinalLevelPlane", "ontology_uid": "0"},
+                # Road cross-section: lanes run in the same direction
+                "6": {"type": "TransverseDivided", "ontology_uid": "0"},
+                # Lane type: standard traffic lanes
+                "7": {"type": "LaneTypeTraffic", "ontology_uid": "0"},
+                # Both ego and object are passenger cars ("medium" vehicle type)
+                "8": {"type": "VehicleCar", "ontology_uid": "0"},
+                # Subject (ego) vehicle speed in km/h
+                "9": {
+                    "type": "SubjectVehicleSpeed",
+                    "ontology_uid": "0",
+                    "subjectVehicleSpeedValue": ve0_kmh,
+                },
+                # Number of lanes on the road
+                "10": {
+                    "type": "LaneSpecificationLaneCount",
+                    "ontology_uid": "0",
+                    "laneSpecificationLaneCountValue": lane_count,
+                },
+                # Lane width in metres
+                "11": {
+                    "type": "LaneSpecificationDimensions",
+                    "ontology_uid": "0",
+                    "laneSpecificationDimensionsValue": lane_width,
+                },
+            },
+        }
+    }
+    openlabel_path = scenario_openx_dir / f"{scenario_name}.json"
+    with Path.open(openlabel_path, "w") as f:
+        json.dump(openlabel, f, indent=2)
+    logger.info(f"Created OpenLABEL file at {openlabel_path}")
+
+
 def unpack_and_run(args_list: list) -> None:
     scenario_generator = CutOutScenarioGenerator(args_list[0])
     scenario_generator.create_all_scenarios(
@@ -308,6 +428,8 @@ def unpack_and_run(args_list: list) -> None:
         create_image=args_list[2],
         create_openx=args_list[3],
         create_gif=args_list[4],
+        create_text=args_list[5],
+        create_openlabel=args_list[6],
     )
 
 
@@ -318,13 +440,23 @@ def generate_all_scenarios() -> None:
     create_image = True
     create_openx = True
     create_gif = False
+    create_text = True
+    create_openlabel = True
 
     n_plots_in_regulation = 6
 
     n_workers = n_plots_in_regulation
 
     all_args_lists = [
-        [result_dir, i + 1, create_image, create_openx, create_gif]
+        [
+            result_dir,
+            i + 1,
+            create_image,
+            create_openx,
+            create_gif,
+            create_text,
+            create_openlabel,
+        ]
         for i in range(n_plots_in_regulation)
     ]
 

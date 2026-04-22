@@ -227,125 +227,89 @@ class CutInScenarioGenerator:
                 scenario_openx_dir, scenario_name, plot_no, ve0_kmh, dv0_kmh, dx0, vy
             )
         if create_openlabel:
-            vo0_kmh = int(np.round(vo0 * 3.6))
             _create_openlabel(
                 scenario_openx_dir,
                 scenario_name,
-                int(plot_no),
                 int(ve0_kmh),
-                int(dv0_kmh),
-                float(dx0),
-                float(vy),
-                vo0_kmh,
-                float(object_vehicle_lc_duration),
-                float(self._ego_s0),
-                float(self._ego_t0),
-                int(self._ego_lanelet_id),
-                float(object_vehicle_s0),
-                float(object_vehicle_t0),
-                int(self._object_lanelet_id),
-                float(self._dy0),
+                dv0_kmh,
+                dx0,
+                vy,
+                self._n_lanes,
+                self._lane_width,
             )
 
 
 def _create_openlabel(
     scenario_openx_dir: Path,
     scenario_name: str,
-    plot_no: int,
     ve0_kmh: int,
     dv0_kmh: int,
     dx0: float,
     vy: float,
-    vo0_kmh: int,
-    object_vehicle_lc_duration: float,
-    ego_s0: float,
-    ego_t0: float,
-    ego_lanelet_id: int,
-    object_vehicle_s0: float,
-    object_vehicle_t0: float,
-    object_lanelet_id: int,
-    dy0: float,
+    lane_count: int,
+    lane_width: float,
 ) -> None:
     openlabel = {
         "openlabel": {
             "metadata": {
                 "schema_version": "1.0.0",
+                "tagged_file": f"{scenario_name}.xosc",
                 "name": scenario_name,
+                "ScenarioId": scenario_name,
                 "description": (
                     "Cut-in scenario from UN/ECE R.157 "
                     "E/ECE/TRANS/505/Rev.3/Add.156/Amend.4, Annex 3"
                 ),
-                "annotator": "alks-scenarios",
-                "comment": f"Plot {plot_no}",
+                "annotator": "ika RWTH-Aachen",
+                "comment": f"ve0 (km/h): {ve0_kmh}, dv0 (km/h): {dv0_kmh}, dx0 (m): {dx0:.1f}, vy (m/s): {vy:.1f}",
+                "ScenarioDatabase": "ALKS - Simple Scenario",
+                "OpenXAvailability": {"Osc": True, "Odr": True, "Osg": False},
             },
-            "objects": {
-                "0": {
-                    "name": "ego",
-                    "type": "Ego",
-                    "object_data": {
-                        "text": [{"name": "vehicle_type", "val": "medium"}],
-                        "num": [
-                            {"name": "v0_kmh", "val": ve0_kmh},
-                            {"name": "s0_m", "val": ego_s0},
-                            {"name": "t0_m", "val": ego_t0},
-                            {"name": "lanelet_id", "val": ego_lanelet_id},
-                        ],
-                    },
-                },
-                "1": {
-                    "name": "object_vehicle",
-                    "type": "Vehicle",
-                    "object_data": {
-                        "text": [{"name": "vehicle_type", "val": "medium"}],
-                        "num": [
-                            {"name": "v0_kmh", "val": vo0_kmh},
-                            {"name": "dx0_m", "val": dx0},
-                            {"name": "s0_m", "val": object_vehicle_s0},
-                            {"name": "t0_m", "val": object_vehicle_t0},
-                            {"name": "lanelet_id", "val": object_lanelet_id},
-                        ],
-                    },
-                },
-            },
-            "actions": {
-                "0": {
-                    "name": "cut_in",
-                    "type": "CutIn",
-                    "action_data": {
-                        "text": [
-                            {"name": "direction", "val": "left"},
-                            {"name": "lc_type", "val": "constant_vy"},
-                            {
-                                "name": "regulation_reference",
-                                "val": "UN/ECE R.157 Annex 3 Table 2",
-                            },
-                        ],
-                        "num": [
-                            {"name": "vy_m_per_s", "val": vy},
-                            {"name": "duration_s", "val": object_vehicle_lc_duration},
-                            {"name": "dy0_m", "val": dy0},
-                        ],
-                    },
-                }
-            },
-            "relations": {
-                "0": {
-                    "name": "CutInActor",
-                    "type": "IsActorOf",
-                    "elements": {
-                        "objects": {"1": {}},
-                        "actions": {"0": {}},
-                    },
-                }
+            "ontologies": {
+                "0": {"uri": "https://openlabel.asam.net/V1-0-0/ontologies/"}
             },
             "tags": {
-                "0": {"name": "scenario_type", "type": "CutIn"},
-                "1": {"name": "regulation_type", "type": "ALKS"},
+                # Primary scenario behaviour
+                "0": {"type": "MotionCutIn", "ontology_uid": "0"},
+                # Object vehicle performs a left lane change (lc_direction=1)
+                "1": {"type": "MotionLaneChangeLeft", "ontology_uid": "0"},
+                # Ego vehicle drives straight throughout
+                "2": {"type": "MotionDrive", "ontology_uid": "0", "motionDriveValue": ve0_kmh},
+                # Road type: 2-lane motorway without active traffic management
+                "3": {"type": "MotorwayUnmanaged", "ontology_uid": "0"},
+                # Road geometry: straight (StraightSegment only, no curves)
+                "4": {"type": "HorizontalStraights", "ontology_uid": "0"},
+                # Road geometry: no gradient defined
+                "5": {"type": "LongitudinalLevelPlane", "ontology_uid": "0"},
+                # Road cross-section: lanes run in the same direction
+                "6": {"type": "TransverseDivided", "ontology_uid": "0"},
+                # Lane type: standard traffic lanes
+                "7": {"type": "LaneTypeTraffic", "ontology_uid": "0"},
+                # Both ego and object are passenger cars ("medium" vehicle type)
+                "8": {"type": "VehicleCar", "ontology_uid": "0"},
+                # Subject (ego) vehicle speed in km/h
+                "9": {
+                    "type": "SubjectVehicleSpeed",
+                    "ontology_uid": "0",
+                    "subjectVehicleSpeedValue": ve0_kmh,
+                },
+                # Number of lanes on the road
+                "10": {
+                    "type": "LaneSpecificationLaneCount",
+                    "ontology_uid": "0",
+                    "laneSpecificationLaneCountValue": lane_count,
+                },
+                # Lane width in metres
+                "11": {
+                    "type": "LaneSpecificationDimensions",
+                    "ontology_uid": "0",
+                    "laneSpecificationDimensionsValue": lane_width,
+                },
             },
         }
     }
     openlabel_path = scenario_openx_dir / f"{scenario_name}.json"
-    with open(openlabel_path, "w") as f:
+    with Path.open(openlabel_path, "w") as f:
         json.dump(openlabel, f, indent=2)
     logger.info(f"Created OpenLABEL file at {openlabel_path}")
 
@@ -360,12 +324,12 @@ def _create_info_text(
     vy: float,
 ) -> None:
     info_text_path = scenario_openx_dir / f"{scenario_name}.txt"
-    with open(info_text_path, "w") as f:
+    with Path.open(info_text_path, "w") as f:
         f.write(
-            f"This is a scenario based on the UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4 for the Cut-in defined in Annex 3. The Parameters are given here: ve0: initial speed of the ego vehicle, dv0: difference in initial speed between ego and object vehicle, dx0: initial longitudinal distance between ego and object vehicle, vy: lateral speed of the object vehicle during the cut-in maneuver.\n"
+            "This is a scenario based on the UN/ECE R.157 E/ECE/TRANS/505/Rev.3/Add.156/Amend.4 for the Cut-in defined in Annex 3. The Parameters are given here: ve0: initial speed of the ego vehicle, dv0: difference in initial speed between ego and object vehicle, dx0: initial longitudinal distance between ego and object vehicle, vy: lateral speed of the object vehicle during the cut-in maneuver.\n"
         )
         f.write(f"Scenario Name: {scenario_name}\n")
-        f.write(f"Plot No: {plot_no}\n")
+        f.write(f"ALKS Amendment Plot No: {plot_no}\n")
         f.write(f"ve0 (km/h): {ve0_kmh}\n")
         f.write(f"dv0 (km/h): {dv0_kmh}\n")
         f.write(f"dx0 (m): {dx0:.1f}\n")
@@ -395,7 +359,10 @@ def generate_all_scenarios() -> None:
     create_text = True
     create_openlabel = True
 
-    n_plots_in_regulation = 1  # Number of plots defined in the regulation
+
+    n_plots_in_regulation = (
+        14
+    )
 
     n_workers = n_plots_in_regulation
 
